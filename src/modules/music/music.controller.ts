@@ -79,15 +79,6 @@ export class MusicController {
     return await this.musicService.getFavorites(req.user.id);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiTags('Admin')
-  @Get('all/notApproved')
-  @ApiOperation({ summary: 'Get all not approved musics' })
-  async getMusics(@Req() req) {
-    await this.musicService.checkAdmin(req.user.role);
-    return await this.musicService.getAll();
-  }
 
   @ApiTags('Music')
   @Get('get/approved')
@@ -108,16 +99,6 @@ export class MusicController {
   @ApiOperation({ summary: 'Get music by id' })
   async getMusic(@Param('id') id: number) {
     return await this.musicService.getOne(+id);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiTags('Admin')
-  @Get('all/deleted') // Updated route to avoid conflict
-  @ApiOperation({ summary: 'Get all deleted musics' })
-  async getDeletedMusics(@Req() req) {
-    await this.musicService.checkAdmin(req.user.role);
-    return await this.musicService.getAllDeleted();
   }
 
   @ApiTags('Admin')

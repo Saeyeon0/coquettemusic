@@ -87,7 +87,7 @@ export class MusicService extends BaseService<MusicEntity> {
   }
   async getOne(id: number) {
     const music = await this.musicRepository.findOne({
-      where: { id: id, isApproved: true, isDeleted: false },
+      where: { id: id, isDeleted: false },
       relations: ['category'],
     });
     await this.checkIfExcist(music, 'music', id);
@@ -154,18 +154,6 @@ export class MusicService extends BaseService<MusicEntity> {
     if (music.isDeleted) {
       throw new BadRequestException('Incorrect status of music');
     }
-
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: music.user.email,
-      subject: 'Music approving',
-      text: `Hello! Your payment reciept for music "${music.title}" was approved and music was published!
-Здравствуйте! Ваш чек об оплате за статью "${music.title}"  был принят а статья была опубликована!`,
-    };
-    const sentEmail = await this.emailService.sendMail(mailOptions);
-    if (!sentEmail) {
-      throw new BadRequestException('Email sending error');
-    }
     music.isApproved = true;
     await this.musicRepository.save(music);
     return { message: 'Successfully approved' };
@@ -176,19 +164,7 @@ export class MusicService extends BaseService<MusicEntity> {
     if (music.isDeleted) {
       throw new BadRequestException('Incorrect status of music');
     }
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: music.user.email,
-      subject: 'Music approving',
-      text: `Hello! Unfortunately Your music "${music.title}" was not approved to payment, contact to admin on comments below music!
-Здравствуйте! К сожалению Ваша статья "${music.title}" не  была одобрена к оплате, свяжитесь с администратором в комментариях под статьей!`,
-    };
-    const sentEmail = await this.emailService.sendMail(mailOptions);
-    if (!sentEmail) {
-      throw new BadRequestException('Email sending error');
-    }
     music.isApproved = false;
-    music.isDeleted = true;
     await this.musicRepository.save(music);
     // music has mistakes
     return { message: 'Successfully declined' };

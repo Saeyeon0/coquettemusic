@@ -73,52 +73,6 @@ export class AuthController {
 
     return this.authService.generateToken(user);
   }
-  @ApiOperation({
-    summary: 'Восстановление пароля',
-  })
-  @Post('forgotPassword')
-  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return await this.userService.forgotPassword(forgotPasswordDto);
-  }
 
-  @ApiOperation({
-    summary: 'Подтвердить 6 значный код',
-  })
-  @Post('confirmCode')
-  async confirmCodeToChangePassword(@Body() confirmEmailDto: ConfirmEmailDto) {
-    const user = await this.userService.findOneUser(confirmEmailDto.email);
 
-    const code = await this.userService.findOneCode(
-      user.passwordRecoveryCodeId,
-    );
-    const currentTime = new Date();
-    const createdAt = code.createdAt;
-    const timeDifference = currentTime.getTime() - createdAt.getTime();
-    const maxValidityDuration = 15 * 60 * 1000;
-    if (timeDifference > maxValidityDuration) {
-      throw new BadRequestException('The code has expired');
-    }
-    const codeMatch = await bcrypt.compare(
-      confirmEmailDto.code,
-      code.confirmCode,
-    );
-    if (!codeMatch) {
-      throw new BadRequestException('Invalid code');
-    }
-    if (codeMatch) {
-      await this.userService.deleteCode(code);
-    }
-    return this.authService.generateToken(user);
-  }
-
-  @UseGuards(JwtAuthGuard)
-  @Patch('change-password')
-  @ApiBearerAuth()
-  @ApiOperation({ summary: 'Сменить пароль' })
-  async changePassword(
-    @Body() changePasswordDto: ChangePasswordDto,
-    @Req() req: any,
-  ) {
-    return this.authService.changePassword(req.user?.email, changePasswordDto);
-  }
 }
